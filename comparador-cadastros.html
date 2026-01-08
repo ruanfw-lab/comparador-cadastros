@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Comparador GMAD (Perfil vs Ponteira)</title>
+    <title>Comparador GMAD</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome -->
@@ -30,20 +30,24 @@
 </head>
 <body class="text-slate-800 h-screen flex flex-col overflow-hidden">
 
-    <!-- Header -->
-    <header class="bg-emerald-900 text-white shadow-lg z-10">
+    <!-- Header (CINZA CLARO) -->
+    <header class="bg-slate-200 text-slate-800 shadow-md z-10 border-b border-slate-300">
         <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <div class="bg-emerald-800 p-2 rounded-lg border border-emerald-700">
-                    <i class="fa-solid fa-code-compare text-emerald-300 text-xl"></i>
+            <div class="flex items-center gap-4">
+                <div class="bg-white p-2 rounded-lg border border-slate-300 shadow-sm flex items-center justify-center h-12 w-auto min-w-[60px]">
+                    <!-- Logo GMAD (SVG) -->
+                    <img src="https://gmad.vtexassets.com/arquivos/logo-gmad.svg" 
+                         onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'text-emerald-800 font-bold text-lg\'>GMAD</span>'"
+                         alt="GMAD" 
+                         class="h-full w-auto object-contain">
                 </div>
                 <div>
-                    <h1 class="text-lg font-bold tracking-wide text-emerald-50">Comparador GMAD</h1>
-                    <p class="text-[10px] text-emerald-300 uppercase tracking-widest">Madville vs Curitiba (IA v7 - Puxadores)</p>
+                    <h1 class="text-lg font-bold tracking-wide text-slate-800">Comparador de Cadastros</h1>
+                    <p class="text-[10px] text-slate-500 uppercase tracking-widest font-semibold">Análise de Similaridade</p>
                 </div>
             </div>
-            <button onclick="exportResults()" id="btnExport" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white text-sm py-2 px-4 rounded shadow transition flex items-center gap-2">
-                <i class="fa-solid fa-download"></i> Exportar Relatório
+            <button onclick="exportResults()" id="btnExport" class="hidden bg-white hover:bg-slate-50 text-slate-700 text-sm py-2 px-4 rounded shadow-sm transition flex items-center gap-2 border border-slate-300 font-medium">
+                <i class="fa-solid fa-download text-emerald-600"></i> Exportar Relatório
             </button>
         </div>
     </header>
@@ -60,7 +64,7 @@
                     <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
                         <i class="fa-solid fa-file-csv text-emerald-600"></i> Arquivo 1 (Madville)
                     </h3>
-                    <div id="dropZoneA" class="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center cursor-pointer transition hover:bg-slate-50" onclick="document.getElementById('fileA').click()">
+                    <div id="dropZoneA" class="border-2 border-dashed border-emerald-300 rounded-lg p-6 text-center cursor-pointer transition hover:bg-emerald-50" onclick="document.getElementById('fileA').click()">
                         <input type="file" id="fileA" class="hidden" accept=".xlsx, .xls, .csv">
                         <div id="statusA">
                             <p class="text-xs text-slate-400">Clique para carregar</p>
@@ -73,7 +77,7 @@
                     <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
                         <i class="fa-solid fa-file-csv text-blue-600"></i> Arquivo 2 (Curitiba)
                     </h3>
-                    <div id="dropZoneB" class="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center cursor-pointer transition hover:bg-slate-50" onclick="document.getElementById('fileB').click()">
+                    <div id="dropZoneB" class="border-2 border-dashed border-blue-300 rounded-lg p-6 text-center cursor-pointer transition hover:bg-blue-50" onclick="document.getElementById('fileB').click()">
                         <input type="file" id="fileB" class="hidden" accept=".xlsx, .xls, .csv">
                         <div id="statusB">
                             <p class="text-xs text-slate-400">Clique para carregar</p>
@@ -90,7 +94,7 @@
                         <span id="rangeValue">65%</span>
                         <span>Mais Preciso</span>
                     </div>
-                    <p class="text-[10px] text-slate-400 mt-2 italic">Diferencia Perfil de Tampa/Ponteira.</p>
+                    <p class="text-[10px] text-slate-400 mt-2 italic">Ajuste fino para encontrar correspondências.</p>
                 </div>
 
                 <button onclick="processComparison()" id="btnCompare" disabled class="w-full bg-slate-200 text-slate-400 font-bold py-3 rounded-lg shadow-sm transition cursor-not-allowed flex justify-center items-center gap-2">
@@ -113,14 +117,14 @@
             <div id="emptyState" class="absolute inset-0 flex flex-col items-center justify-center text-slate-400 z-0">
                 <i class="fa-solid fa-arrows-left-right-to-line text-6xl mb-4 opacity-20"></i>
                 <p class="text-lg font-medium">Carregue as duas tabelas para começar</p>
-                <p class="text-sm opacity-60">O sistema trata Tampa como Ponteira</p>
+                <p class="text-sm opacity-60">O sistema cruza e normaliza os dados automaticamente</p>
             </div>
 
             <!-- Loading State -->
             <div id="loadingState" class="hidden absolute inset-0 bg-white/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center">
                 <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mb-4"></div>
                 <p class="text-emerald-800 font-bold animate-pulse">Cruzando dados...</p>
-                <p class="text-xs text-slate-500 mt-2">Aplicando regras de segurança (Puxadores, Pistões)</p>
+                <p class="text-xs text-slate-500 mt-2">Aplicando regras de segurança e normalização</p>
             </div>
 
             <!-- Results Table -->
@@ -201,13 +205,13 @@
         // --- 2. INTELLIGENCE LOGIC (SYNONYMS) ---
 
         const SYNONYMS = [
-            // Puxadores (Novo)
+            // Puxadores
             { key: 'PUX', value: 'PUXADOR' },
             { key: 'PUXAD', value: 'PUXADOR' },
             { key: 'TAMPA', value: 'PONTEIRA' },
             { key: 'TPA', value: 'PONTEIRA' },
             { key: 'PONT', value: 'PONTEIRA' },
-            { key: 'ACAB', value: 'PONTEIRA' }, // As vezes acabamento é ponteira
+            { key: 'ACAB', value: 'PONTEIRA' }, 
             
             // Corrediças
             { key: 'CORR', value: 'CORREDICA' },
@@ -278,7 +282,6 @@
         function normalizeString(str) {
             if (!str) return "";
             let s = str.toString().toUpperCase();
-            
             s = normalizeUnits(s);
             s = s.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
             s = s.replace(/[^A-Z0-9\s]/g, ' '); 
@@ -296,7 +299,6 @@
             
             const uniqueWords = [...new Set(normalizedWords.filter(w => w.length > 0))];
             uniqueWords.sort();
-
             return uniqueWords.join(' ');
         }
 
@@ -305,39 +307,25 @@
             return matches ? matches.sort().join(',') : '';
         }
 
-        // Dice Coefficient
         function getSimilarity(s1, s2) {
             const norm1 = normalizeString(s1);
             const norm2 = normalizeString(s2);
             
-            // --- REGRA 1: PISTÕES FI vs FN ---
+            // --- Regras Específicas ---
+            // 1. Pistões FI vs FN
             if (norm1.includes("PISTAO") && norm2.includes("PISTAO")) {
-                const hasFI1 = /\bFI\b/.test(norm1);
-                const hasFN1 = /\bFN\b/.test(norm1);
-                const hasFI2 = /\bFI\b/.test(norm2);
-                const hasFN2 = /\bFN\b/.test(norm2);
-
-                if ((hasFI1 && hasFN2) || (hasFN1 && hasFI2)) {
-                    return 0.1;
-                }
+                const hasFI1 = /\bFI\b/.test(norm1), hasFN1 = /\bFN\b/.test(norm1);
+                const hasFI2 = /\bFI\b/.test(norm2), hasFN2 = /\bFN\b/.test(norm2);
+                if ((hasFI1 && hasFN2) || (hasFN1 && hasFI2)) return 0.1;
             }
 
-            // --- REGRA 2: PERFIL vs PONTEIRA (PUXADOR) ---
-            // Se ambos tem PUXADOR (PUX), mas um é PERFIL e o outro PONTEIRA (TAMPA), penaliza.
+            // 2. Perfil vs Ponteira
             if (norm1.includes("PUXADOR") && norm2.includes("PUXADOR")) {
-                const hasPerfil1 = norm1.includes("PERFIL");
-                const hasPonteira1 = norm1.includes("PONTEIRA"); // TAMPA vira PONTEIRA no normalize
-                
-                const hasPerfil2 = norm2.includes("PERFIL");
-                const hasPonteira2 = norm2.includes("PONTEIRA");
-
-                // Se um tem PERFIL e o outro PONTEIRA, penaliza forte
-                if ((hasPerfil1 && hasPonteira2) || (hasPonteira1 && hasPerfil2)) {
-                    return 0.1;
-                }
+                const hasPerfil1 = norm1.includes("PERFIL"), hasPonteira1 = norm1.includes("PONTEIRA");
+                const hasPerfil2 = norm2.includes("PERFIL"), hasPonteira2 = norm2.includes("PONTEIRA");
+                if ((hasPerfil1 && hasPonteira2) || (hasPonteira1 && hasPerfil2)) return 0.1;
             }
 
-            // Checagem Numérica
             const nums1 = extractNumbers(norm1);
             const nums2 = extractNumbers(norm2);
             const set1 = nums1.split(',').filter(n => n);
@@ -364,7 +352,6 @@
 
             let intersection = 0;
             let usedIndexes = new Set();
-            
             for (let i = 0; i < bigrams1.length; i++) {
                 for (let j = 0; j < bigrams2.length; j++) {
                     if (bigrams1[i] === bigrams2[j] && !usedIndexes.has(j)) {
@@ -374,21 +361,16 @@
                     }
                 }
             }
-
             return (2.0 * intersection) / (bigrams1.length + bigrams2.length);
         }
 
         // --- 3. Processing ---
-
         function processComparison() {
             document.getElementById('loadingState').classList.remove('hidden');
-            
             setTimeout(() => {
                 const threshold = parseInt(similarityRange.value) / 100;
                 comparisonResults = [];
-                let countExact = 0;
-                let countProbable = 0;
-                let countUnique = 0;
+                let countExact = 0, countProbable = 0, countUnique = 0;
 
                 const getVal = (row, keys) => {
                     if (!row) return '';
@@ -417,18 +399,14 @@
                     let bestMatch = null;
                     let bestScore = 0;
 
-                    // Busca em B
                     dataB.forEach((itemB) => {
                         const marcaB = getVal(itemB, ['MARCA', 'FABRICANTE']) || '';
-                        
                         if (marcaA && marcaB) {
                             const brandScore = getSimilarity(marcaA, marcaB);
                             if (brandScore < 0.6) return; 
                         }
-
                         const descB = getVal(itemB, ['DESC', 'PRODUTO']) || '';
                         const score = getSimilarity(descA, descB);
-
                         if (score > bestScore) {
                             bestScore = score;
                             bestMatch = itemB;
@@ -439,7 +417,6 @@
                         const descB = getVal(bestMatch, ['DESC', 'PRODUTO']);
                         const refB = getVal(bestMatch, ['REF', 'COD', 'SERVIÇO', 'SERV']);
                         const priceB = getPrice(bestMatch);
-                        
                         let status = bestScore >= 0.95 ? 'EXATO' : 'PROVÁVEL';
                         if(status === 'EXATO') countExact++; else countProbable++;
 
@@ -473,7 +450,6 @@
                 });
 
                 comparisonResults.sort((a, b) => b.score - a.score);
-
                 renderResults();
                 
                 document.getElementById('statExact').innerText = countExact;
@@ -481,18 +457,15 @@
                 document.getElementById('statUnique').innerText = countUnique;
                 document.getElementById('statsBox').classList.remove('hidden');
                 document.getElementById('btnExport').classList.remove('hidden');
-
                 document.getElementById('loadingState').classList.add('hidden');
                 document.getElementById('emptyState').classList.add('hidden');
                 document.getElementById('resultsContainer').classList.remove('hidden');
-
             }, 200);
         }
 
         function renderResults() {
             const tbody = document.getElementById('resultsBody');
             tbody.innerHTML = '';
-
             const displayLimit = 2000; 
             const dataToShow = comparisonResults.slice(0, displayLimit);
 
@@ -554,13 +527,11 @@
                 'Curitiba - Ref': r.refB,
                 'Curitiba - Preço': r.priceB
             }));
-
             const worksheet = XLSX.utils.json_to_sheet(cleanData);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Comparativo");
             XLSX.writeFile(workbook, "Comparativo_GMAD.xlsx");
         }
-
     </script>
 </body>
 </html>
