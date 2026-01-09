@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo Inteligente GMAD</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f0fdf4; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f0fdf4; }
+        ::-webkit-scrollbar-thumb { background: #86efac; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #22c55e; }
+        .custom-checkbox input:checked + div { background-color: #10b981; border-color: #10b981; }
+        .custom-checkbox input:checked + div svg { display: block; }
+    </style>
+</head>
+<body class="text-slate-800 h-screen flex flex-col overflow-hidden">
+
+    <!-- Header Cinza Claro -->
+    <header class="bg-slate-200 text-slate-800 shadow-md z-10 border-b border-slate-300">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <div class="bg-white p-2 rounded-lg border border-slate-300 shadow-sm flex items-center justify-center h-12 w-auto min-w-[60px]">
+                    <img src="https://gmad.vtexassets.com/arquivos/logo-gmad.svg" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'text-emerald-800 font-bold text-lg\'>GMAD</span>'" alt="GMAD" class="h-full w-auto object-contain">
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-wide text-slate-800">Catálogo Inteligente</h1>
+                    <p class="text-[10px] text-slate-500 uppercase tracking-widest font-semibold">Visualização & Preços</p>
+                </div>
+            </div>
+            <!-- Upload Trigger -->
+            <div class="relative">
+                <input type="file" id="landingFileInput" accept=".csv, .xlsx, .xls" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                <button class="bg-white hover:bg-slate-50 text-slate-700 text-sm py-2 px-4 rounded shadow-sm transition flex items-center gap-2 border border-slate-300 font-medium">
+                    <i class="fa-solid fa-upload text-emerald-600"></i> Carregar Tabela
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden">
+        
+        <!-- Filters -->
+        <aside class="w-80 bg-white border-r border-emerald-100 flex flex-col shadow-sm z-20">
+            <div class="p-6 flex flex-col gap-5 h-full overflow-y-auto">
+                <div id="fileStatus" class="hidden text-xs font-semibold text-emerald-700 bg-emerald-50 p-3 rounded-lg border border-emerald-200 flex items-start gap-3 shadow-sm">
+                    <i class="fa-solid fa-check-circle mt-0.5 text-lg"></i>
+                    <div class="overflow-hidden"><span class="block text-[10px] text-emerald-500 uppercase tracking-wider mb-1">Arquivo Carregado</span><span id="fileNameDisplay" class="block truncate">...</span></div>
+                </div>
+
+                <!-- Filtro 1: Marca -->
+                <div class="p-4 rounded-xl bg-white border border-slate-200 shadow-sm hover:border-emerald-300 transition-colors group">
+                    <h3 class="text-slate-700 font-bold mb-3 text-sm flex items-center gap-2"><span class="bg-slate-100 text-slate-500 w-5 h-5 rounded-full flex items-center justify-center text-[10px]">1</span> Marca</h3>
+                    <div class="relative">
+                        <select id="brandSelect" class="w-full bg-slate-50 border border-slate-200 text-slate-700 py-2.5 px-3 pr-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 appearance-none transition text-sm font-medium cursor-pointer"><option value="">Selecione...</option></select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400"><i class="fa-solid fa-chevron-down text-xs"></i></div>
+                    </div>
+                </div>
+
+                <!-- Filtro 2: Categoria -->
+                <div id="dynamicFilterBox" class="p-4 rounded-xl bg-white border border-slate-200 shadow-sm transition-all duration-300 opacity-50">
+                    <h3 class="text-slate-700 font-bold mb-3 text-sm flex items-center gap-2"><span class="bg-slate-100 text-slate-500 w-5 h-5 rounded-full flex items-center justify-center text-[10px]">2</span> <span id="dynamicFilterLabel">Categoria</span></h3>
+                    <div class="relative">
+                        <select id="dynamicSelect" disabled class="w-full bg-slate-100 border border-slate-200 text-slate-400 py-2.5 px-3 pr-8 rounded-lg focus:outline-none cursor-not-allowed transition text-sm"><option value="">Aguardando Marca...</option></select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400"><i class="fa-solid fa-chevron-down text-xs"></i></div>
+                    </div>
+                </div>
+
+                <!-- Busca -->
+                <div class="mt-auto pt-4 border-t border-slate-100">
+                    <label class="block text-slate-400 text-[10px] font-bold mb-2 uppercase tracking-wider">Busca Rápida</label>
+                    <div class="relative text-slate-400 focus-within:text-emerald-600">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3"><i class="fa-solid fa-magnifying-glass"></i></span>
+                        <input type="text" id="searchInput" class="w-full bg-slate-50 border border-slate-200 py-2 pl-9 pr-4 rounded-lg focus:outline-none focus:border-emerald-500 focus:bg-white transition text-sm placeholder-slate-400" placeholder="Nome ou Código...">
+                    </div>
+                </div>
+                <button id="resetBtn" class="text-xs text-slate-500 hover:text-red-500 transition flex items-center justify-center gap-2 py-2 hover:bg-slate-50 rounded-lg"><i class="fa-solid fa-trash-can"></i> Limpar Filtros</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col bg-slate-50 relative z-10">
+            <div class="bg-white border-b border-emerald-100 px-6 py-4 flex justify-between items-center shadow-sm">
+                <div class="flex items-baseline gap-2"><span id="resultCount" class="text-2xl font-bold text-emerald-800">0</span> <span class="text-xs font-medium text-slate-500 uppercase tracking-wide">produtos encontrados</span></div>
+            </div>
+            <div class="px-6 py-3 grid grid-cols-12 gap-4 text-[11px] font-bold text-emerald-800 uppercase tracking-wider border-b border-emerald-200 bg-emerald-50/50 select-none">
+                <div class="col-span-1 text-center">Sel.</div>
+                <div class="col-span-6 pl-2">Descrição Completa</div>
+                <div class="col-span-2 text-center" id="colDynamic">Marca</div>
+                <div class="col-span-1 text-center">UN</div>
+                <div class="col-span-2 text-right pr-4">Preço (R$)</div>
+            </div>
+            <div class="flex-1 overflow-y-auto px-6 py-2 pb-24" id="tableContainer"></div>
+            
+            <!-- Empty State -->
+            <div id="initialState" class="absolute inset-0 flex flex-col items-center justify-center text-center p-8 bg-slate-50/90 backdrop-blur-sm z-10">
+                <div class="bg-white p-6 rounded-full shadow-lg mb-6 border border-emerald-100 animate-pulse"><i class="fa-solid fa-cloud-arrow-up text-4xl text-emerald-300"></i></div>
+                <h3 class="text-xl font-bold text-slate-700 mb-2">Carregue um Arquivo</h3>
+                <p class="text-slate-500 text-sm max-w-xs mx-auto">Use o botão no topo para carregar sua tabela de MDF ou Ferragens.</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- Barra de Comparação -->
+    <div id="comparisonBar" class="fixed bottom-0 left-0 right-0 bg-white border-t border-emerald-200 shadow-xl p-4 transform translate-y-full transition-transform duration-300 z-50 flex justify-between items-center">
+        <div class="flex items-center gap-4 pl-4">
+            <div class="bg-emerald-100 text-emerald-700 rounded-full w-10 h-10 flex items-center justify-center font-bold" id="compareCount">0</div>
+            <div class="text-sm">
+                <p class="font-bold text-emerald-900">Produtos Selecionados</p>
+                <p class="text-xs text-slate-500">Para comparação de preços</p>
+            </div>
+        </div>
+        <div class="flex gap-3">
+            <button onclick="clearSelection()" class="px-4 py-2 text-xs font-medium text-slate-500 hover:text-red-500 hover:bg-slate-50 rounded-lg transition">Limpar</button>
+            <button onclick="openCompareModal()" class="px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg shadow-md font-bold text-sm flex items-center gap-2 transition"><i class="fa-solid fa-scale-balanced"></i> Comparar Agora</button>
+        </div>
+    </div>
+
+    <!-- Modal de Comparação -->
+    <div id="compareModal" class="fixed inset-0 z-[60] bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+            <div class="bg-emerald-900 text-white px-6 py-4 flex justify-between items-center">
+                <div class="flex items-center gap-3"><i class="fa-solid fa-scale-balanced text-emerald-300"></i><h2 class="font-bold text-lg">Comparativo de Preços</h2></div>
+                <button onclick="closeCompareModal()" class="text-emerald-300 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-6 bg-slate-50">
+                <table class="w-full border-collapse bg-white shadow-sm rounded-lg overflow-hidden text-sm">
+                    <thead><tr class="bg-slate-100 text-slate-500 text-xs uppercase tracking-wider text-left"><th class="px-4 py-3">Produto</th><th class="px-4 py-3 text-center">Marca</th><th class="px-4 py-3 text-right">Preço</th><th class="px-4 py-3 text-center">Ação</th></tr></thead>
+                    <tbody id="compareTableBody" class="divide-y divide-slate-100"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let appState = { mode: 'unknown', data: [], filtered: [], selected: [] };
+        
+        // Elementos UI
+        const landingFileInput = document.getElementById('landingFileInput');
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
+        const fileStatus = document.getElementById('fileStatus');
+        const brandSelect = document.getElementById('brandSelect');
+        const dynamicSelect = document.getElementById('dynamicSelect');
+        const dynamicFilterBox = document.getElementById('dynamicFilterBox');
+        const dynamicFilterLabel = document.getElementById('dynamicFilterLabel');
+        const searchInput = document.getElementById('searchInput');
+        const tableContainer = document.getElementById('tableContainer');
+        const resultCount = document.getElementById('resultCount');
+        const initialState = document.getElementById('initialState');
+        const colDynamic = document.getElementById('colDynamic');
+        
+        // Elementos de Comparação
+        const comparisonBar = document.getElementById('comparisonBar');
+        const compareCount = document.getElementById('compareCount');
+        const compareModal = document.getElementById('compareModal');
+        const compareTableBody = document.getElementById('compareTableBody');
+
+        // --- Upload ---
+        landingFileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0]; if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const data = new Uint8Array(e.target.result); const workbook = XLSX.read(data, {type: 'array'});
+                const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                detectAndProcess(json);
+                fileNameDisplay.textContent = file.name; fileStatus.classList.remove('hidden');
+                initialState.classList.add('hidden');
+                populateFilters();
+            }; reader.readAsArrayBuffer(file);
+        });
+
+        function detectAndProcess(rows) {
+            const firstRow = rows[0]; const keys = Object.keys(firstRow).map(k => k.toLowerCase().trim());
+            const hasGrupo = keys.some(k => k === 'grupo'); const hasRef = keys.some(k => k === 'referencia');
+            if (hasGrupo || hasRef) { appState.mode = 'hardware'; setupHardwareMode(rows); } else { appState.mode = 'mdf'; setupMDFMode(rows); }
+        }
+
+        function normalizeRow(row) { const n = {}; Object.keys(row).forEach(key => n[key.toLowerCase().trim()] = row[key]); return n; }
+
+        function setupMDFMode(rows) {
+            dynamicFilterLabel.textContent = "Espessura"; colDynamic.textContent = "Marca";
+            const newData = [];
+            rows.forEach((row, idx) => {
+                const r = normalizeRow(row);
+                const desc = r['descrição'] || r['descricao'] || r['produto'] || "";
+                const thicknessMatch = desc.toUpperCase().match(/(\d+)\s*MM/);
+                if (thicknessMatch) {
+                    newData.push({
+                        uid: `MDF_${idx}`, d: String(desc).trim(), m: (r['marca'] || "OUTROS").toUpperCase().trim(),
+                        cat: parseInt(thicknessMatch[1]), catLabel: `${parseInt(thicknessMatch[1])}mm`,
+                        p: parseFloat(r['preco'] || r['preço'] || 0), u: r['unidade'] || r['un'] || "CH"
+                    });
+                }
+            });
+            appState.data = newData;
+        }
+
+        function setupHardwareMode(rows) {
+            dynamicFilterLabel.textContent = "Tipo de Produto"; colDynamic.textContent = "Marca";
+            const newData = [];
+            rows.forEach((row, idx) => {
+                const r = normalizeRow(row);
+                const desc = String(r['descrição'] || r['descricao'] || "").toUpperCase();
+                const grupo = String(r['grupo'] || "").toUpperCase();
+                let type = null;
+                const txt = desc + " " + grupo;
+
+                if (txt.includes("DOBR") || txt.includes("DOBRADICA") || txt.includes("CALCO")) type = "DOBRADIÇAS / CALÇOS";
+                else if (txt.includes("PUX") || txt.includes("PUXADOR")) type = "PUXADORES";
+                else if (txt.includes("CORR") || txt.includes("CORREDICA")) {
+                    if (txt.includes("OCULTA") || txt.includes("INVISIVEL") || txt.includes("TANDEM") || txt.includes("MOVENTO") || txt.includes("DYNAPRO") || txt.includes("MATRIX")) type = "CORREDIÇAS OCULTAS";
+                    else if (txt.includes("TELESCOPICA") || txt.includes("TELESC") || txt.includes("ESFERA") || txt.includes("TN") || txt.includes("TT") || txt.includes("H45")) type = "CORREDIÇAS TELESCÓPICAS";
+                    else type = "CORREDIÇAS (OUTRAS)";
+                }
+                
+                if (type) {
+                    newData.push({
+                        uid: r['referencia'] || `HW_${idx}`, d: desc, m: (r['marca'] || "OUTROS").toUpperCase().trim(),
+                        cat: type, catLabel: type,
+                        p: parseFloat(r['preco'] || r['preço'] || 0), u: r['unidade'] || r['un'] || "UN"
+                    });
+                }
+            });
+            newData.sort((a,b) => a.cat.localeCompare(b.cat) || a.d.localeCompare(b.d));
+            appState.data = newData;
+        }
+
+        // --- Filtros & Renderização ---
+        function populateFilters() {
+            const brands = [...new Set(appState.data.map(i => i.m))].sort();
+            brandSelect.innerHTML = '<option value="">Selecione...</option>';
+            brands.forEach(b => { const opt = document.createElement('option'); opt.value = b; opt.textContent = b; brandSelect.appendChild(opt); });
+        }
+
+        function updateDynamicFilter() {
+            const selectedBrand = brandSelect.value;
+            if (!selectedBrand) { dynamicSelect.innerHTML = '<option value="">Aguardando Marca...</option>'; dynamicSelect.disabled = true; dynamicFilterBox.classList.add('opacity-50'); return; }
+            dynamicSelect.disabled = false; dynamicFilterBox.classList.remove('opacity-50');
+            
+            const brandItems = appState.data.filter(i => i.m === selectedBrand);
+            const categories = new Map(); brandItems.forEach(i => categories.set(i.cat, i.catLabel));
+            let sortedKeys = Array.from(categories.keys());
+            if (appState.mode === 'mdf') sortedKeys.sort((a,b) => a - b); else sortedKeys.sort();
+            
+            dynamicSelect.innerHTML = '<option value="">Todos</option>';
+            sortedKeys.forEach(key => { const opt = document.createElement('option'); opt.value = key; opt.textContent = categories.get(key); dynamicSelect.appendChild(opt); });
+        }
+
+        function filterData() {
+            const brand = brandSelect.value; const cat = dynamicSelect.value; const search = searchInput.value.toLowerCase();
+            appState.filtered = appState.data.filter(item => {
+                const matchBrand = brand ? item.m === brand : true;
+                const matchCat = cat ? String(item.cat) === cat : true;
+                const matchSearch = search ? (item.d.toLowerCase().includes(search) || String(item.uid).toLowerCase().includes(search)) : true;
+                return matchBrand && matchCat && matchSearch;
+            });
+            renderTable();
+        }
+
+        function renderTable() {
+            tableContainer.innerHTML = ''; resultCount.textContent = appState.filtered.length;
+            appState.filtered.forEach(item => {
+                const isSelected = appState.selected.some(s => s.uid === item.uid);
+                const bgClass = isSelected ? 'bg-emerald-50 border-l-4 border-l-emerald-500' : 'hover:bg-emerald-50/60 border-l-4 border-l-transparent';
+                
+                const row = document.createElement('div');
+                row.className = `grid grid-cols-12 gap-4 px-6 py-3 border-b border-emerald-50 items-center transition-all duration-200 text-sm group ${bgClass}`;
+                
+                row.innerHTML = `
+                    <div class="col-span-1 text-center">
+                        <label class="custom-checkbox cursor-pointer relative flex items-center justify-center">
+                            <input type="checkbox" class="sr-only" ${isSelected ? 'checked' : ''} onchange="toggleSelection('${item.uid}')">
+                            <div class="w-5 h-5 border-2 border-slate-300 rounded bg-white flex items-center justify-center text-white transition-colors">
+                                <svg class="w-3 h-3 ${isSelected ? '' : 'hidden'}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                        </label>
+                    </div>
+                    <div class="col-span-6 font-medium text-slate-700 truncate group-hover:text-emerald-900 cursor-pointer" onclick="toggleSelection('${item.uid}')" title="${item.d}">${item.d}</div>
+                    <div class="col-span-2 text-center"><span class="bg-white text-slate-600 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border border-slate-200">${item.m}</span></div>
+                    <div class="col-span-1 text-center text-xs text-slate-400">${item.u}</div>
+                    <div class="col-span-2 text-right font-bold text-emerald-600 bg-emerald-50/50 px-3 py-1.5 rounded border border-transparent group-hover:border-emerald-100 group-hover:bg-white shadow-sm">R$ ${item.p.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+                `;
+                tableContainer.appendChild(row);
+            });
+        }
+
+        // --- Lógica de Comparação ---
+        function toggleSelection(uid) {
+            const index = appState.selected.findIndex(s => s.uid == uid);
+            if (index > -1) { appState.selected.splice(index, 1); } 
+            else { const item = appState.data.find(d => d.uid == uid); if (item) appState.selected.push(item); }
+            updateComparisonUI(); renderTable();
+        }
+
+        function updateComparisonUI() {
+            const count = appState.selected.length; compareCount.textContent = count;
+            if (count > 0) comparisonBar.classList.remove('translate-y-full');
+            else comparisonBar.classList.add('translate-y-full');
+        }
+
+        function clearSelection() { appState.selected = []; updateComparisonUI(); renderTable(); }
+
+        function openCompareModal() {
+            if (appState.selected.length === 0) return;
+            const lowestPrice = Math.min(...appState.selected.map(i => i.p));
+            compareTableBody.innerHTML = '';
+            
+            appState.selected.forEach(item => {
+                const isLowest = item.p === lowestPrice && item.p > 0;
+                const priceClass = isLowest ? 'text-emerald-700 bg-emerald-100 border-emerald-200' : 'text-slate-600 border-transparent';
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-slate-50 border-b border-slate-100 last:border-b-0';
+                row.innerHTML = `
+                    <td class="px-4 py-3 font-medium text-slate-700">${item.d}</td>
+                    <td class="px-4 py-3 text-center text-slate-500 text-xs">${item.m}</td>
+                    <td class="px-4 py-3 text-right font-bold"><span class="px-2 py-1 rounded border ${priceClass}">R$ ${item.p.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span></td>
+                    <td class="px-4 py-3 text-center"><button onclick="toggleSelection('${item.uid}'); openCompareModal();" class="text-slate-400 hover:text-red-500 transition"><i class="fa-solid fa-trash-can"></i></button></td>
+                `;
+                compareTableBody.appendChild(row);
+            });
+            compareModal.classList.remove('hidden');
+        }
+
+        function closeCompareModal() { compareModal.classList.add('hidden'); }
+
+        brandSelect.addEventListener('change', () => { updateDynamicFilter(); filterData(); });
+        dynamicSelect.addEventListener('change', filterData);
+        searchInput.addEventListener('input', filterData);
+        document.getElementById('resetBtn').addEventListener('click', () => { brandSelect.value = ""; dynamicSelect.value = ""; searchInput.value = ""; updateDynamicFilter(); filterData(); });
+    </script>
+</body>
+</html>
